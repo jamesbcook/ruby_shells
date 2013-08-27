@@ -1,4 +1,6 @@
 #!/usr/bin/env ruby
+require 'openssl'
+require 'base64'
 module MainCommands
   def print_error(text)
 	  print "\e[31m[-]\e[0m #{text}"
@@ -29,5 +31,24 @@ module MainCommands
 	end
 	def exit()
 
+	end
+	@aes = OpenSSL::Cipher.new("AES-256-CFB")
+	@key = 'abcdefghijklmnopqrstuvwxyz123456'
+	def encrypt(command)
+	  @aes.encrypt
+	  @aes.key = @key
+		#aes.iv = iv
+		encrypted_data = @aes.update(command) + @aes.final
+		encoded_command = Base64.encode64(encrypted_data)
+		return encoded_command
+	end
+	def decrypt(command)
+    @aes.decrypt
+		@aes.key = @key
+		#aes.iv = iv
+		base64_data = command
+		decode_data = Base64.decode64(base64_data)
+		decrypt_data = @aes.update(decode_data) + @aes.final
+		return decrypt_data
 	end
 end
