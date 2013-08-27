@@ -3,15 +3,26 @@ require 'socket'
 require './core'
 include MainCommands
 def main_shell()
-	main = [(print ("main> ")), $stdin.gets.rstrip][1]
-	main_shell() if main == ''
-	list_sessions(@clients) if main == 'list_sessions'
-	help() if main == 'help'
-	exit if main == 'exit'
+	#main = [(print ("main> ")), $stdin.gets.rstrip][1]
+	main = Readline.readline('main> ', true)
+	case main.strip
+		when 'list_sessions'
+			list_sessions(@clients)
+		when 'help'
+			help()
+		when 'exit'
+			exit
+		else
+			print_error("Command #{main} not found\n") 
+			main_shell()
+	end
 	if main.split(' ')[0] == 'use_session'
 		session_id = main.split(' ')[1]
 		use_session(@clients[:"#{session_id}"])
 	end
+  rescue => e
+	  print_error("#{e}\n")
+	  main_shell()
 end
 def command_client(client)
 	loop {
