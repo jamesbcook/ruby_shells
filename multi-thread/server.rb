@@ -9,15 +9,17 @@ def main_shell()
 	help() if main == 'help'
 	exit if main == 'exit'
 	if main.split(' ')[0] == 'use_session'
-		use_session(main.split(' ')[1])
+		session_id = main.split(' ')[1]
+		use_session(@clients[:"#{session_id}"])
 	end
 end
 def command_client(client)
 	loop {
 		command = [(print ("shell> ")), $stdin.gets.rstrip][1]
-		start_loop(client) if command == ''
+		command_client(client) if command == ''
 		client.print("#{command}")
 		exit if command == 'exit'		
+		background if command == 'background'
 		out_put = ''
 		recv_length = 1024
 		while (tmp = client.recv(recv_length))
@@ -31,7 +33,6 @@ begin
 	@clients = {}
 	client_id = "0"
 	server = TCPServer.open(4444)
-#	client = server.accept
   Thread.new {
     loop {
       Thread.start(server.accept) do |client|  

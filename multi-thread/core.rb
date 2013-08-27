@@ -12,7 +12,7 @@ module MainCommands
 	def print_warning(text)
 		print "\e[33m[!]\e[0m #{text}"
 	end
-	def background
+	def background()
 		main_shell()
 	end
 	def list_sessions(client_hash)
@@ -20,8 +20,8 @@ module MainCommands
 		client_hash.each {|id,client| print "#{id}\t#{client}\n"}
 		main_shell()
 	end
-	def use_session(client_hash)
-
+	def use_session(client)
+		command_client(client)
 	end
 	def help()
 		print "list_sessions\tlist active sessions\nbackground\tput session in the background\nuse_session\tuse a session\nexit\t\texit program\nhelp\t\tthis page\n"
