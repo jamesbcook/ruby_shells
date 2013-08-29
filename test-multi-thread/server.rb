@@ -29,14 +29,16 @@ def command_client(client)
 		case command
 		  when 'exit'
 				client.print("#{command}\0")
-				exit
+				client.close()
 			when ''
 				command_client(client)
       when 'background'
-				print_info("Backgrounding Session!")
+				print_info("Backgrounding Session!\n")
 				background()
+			else
+				client.print("#{command}\0")
 		end
-		client.print("#{command}\0")
+		#client.print("#{command}\0")
 		out_put = ''
 		recv_length = 1024
 		while (tmp = client.recv(recv_length))
@@ -54,7 +56,8 @@ begin
   Thread.new {
     loop {
       Thread.start(connected_client = server.accept) do |client|  
-				@client_array << connected_client
+				#@client_array << connected_client
+				@client_array << client
 				client_name = client.recv(1024)
 			  print_success("#{client_name}\n")
 			  @client_hash[:"#{client_id}"] = client_name
