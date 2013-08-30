@@ -4,7 +4,6 @@ def command_loop(socket)
 	loop {
 		command = socket.recv(1024)
 		command = command.strip
-		puts command
 		exit if command == 'exit'
 		stdin, stdout_and_stderr, wait_thr = Open3.popen2e("#{command}")
 		socket.print("#{stdout_and_stderr.readlines.join.chomp}\0")
