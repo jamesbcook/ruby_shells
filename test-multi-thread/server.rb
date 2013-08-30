@@ -14,7 +14,12 @@ def main_shell()
 			Kernel.exit
 	  when 'use_session'
 	    session_id = main.split(' ')[1]
-			use_session(@client_array[session_id.to_i])
+			if session_id == nil
+				print_error("No ID\n")
+				main_shell()
+			else
+			  use_session(@client_array[session_id.to_i])
+			end
 		else
 			print_error("Command #{main} not found\n") 
 			main_shell()
@@ -38,7 +43,6 @@ def command_client(client)
 			else
 				client.print("#{command}\0")
 		end
-		#client.print("#{command}\0")
 		out_put = ''
 		recv_length = 1024
 		while (tmp = client.recv(recv_length))
@@ -52,14 +56,13 @@ begin
 	@client_hash = {}
 	client_id = "0"
 	@client_array = []
-	server = TCPServer.open(4444)
-  Thread.new {
+	server = TCPServer.open(4444) 
+	Thread.new {	
     loop {
-      Thread.start(connected_client = server.accept) do |client|  
-				#@client_array << connected_client
+      Thread.start(server.accept) do |client|
 				@client_array << client
 				client_name = client.recv(1024)
-			  print_success("#{client_name}\n")
+			  print_success("#{client_name}")
 			  @client_hash[:"#{client_id}"] = client_name
 			  client_id = client_id.to_i
 			  client_id += 1
