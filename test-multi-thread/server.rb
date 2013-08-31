@@ -1,5 +1,6 @@
 #!/usr/bin/env ruby
 require 'socket'
+require 'open3'
 require './core'
 include MainCommands
 def main_shell()
@@ -13,16 +14,18 @@ def main_shell()
 		when 'exit'
 			Kernel.exit
 	  when 'use_session'
-	    session_id = main.split(' ')[1]
-			if session_id == nil
+	    @session_id = main.split(' ')[1]
+			if @session_id == nil
 				print_error("No ID\n")
 				main_shell()
 			else
-			  use_session(@client_array[session_id.to_i])
+			  use_session(@client_array[@session_id.to_i])
 			end
 		else
-			print_error("Command #{main} not found\n") 
-			main_shell()
+			stdin, stdout_and_stderr = Open3.popen2e("#{main}")
+			print_info("OS Command!\n")
+			print "#{stdout_and_stderr.readlines.join.chomp}\n"
+		  main_shell()
 	end
   rescue => e
 	  print_error("#{e}\n")
@@ -30,7 +33,7 @@ def main_shell()
 end
 def command_client(client)
 	loop {
-		command = [(print ("shell> ")), $stdin.gets.rstrip][1]
+		command = [(print ("#{@client_hash[:"#{@session_id}"]}:shell> ")), $stdin.gets.rstrip][1]
 		case command
 		  when 'exit'
 				client.print("#{command}\0")
@@ -70,6 +73,7 @@ begin
 		  end
      }
 	}
+	Thread.new { client_status(@client_array,@client_hash) }
   main_shell()
 	rescue => error
     print_error("#{error}\n")
