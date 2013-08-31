@@ -33,6 +33,23 @@ module MainCommands
 	def exit()
 
 	end
+	def client_status(client_array,client_hash)
+		loop {
+		  client_array.each do |client|
+			  array_index = client_array.index(client)
+			  next if client == nil
+		    if client.closed?
+			    print_info("#{client_hash[:"#{array_index}"]} left\n")
+				  client_hash.delete(:"#{array_index}")
+          client_array.delete_at(array_index)
+			    client_array.insert(array_index,nil)
+		    end
+      end
+			sleep(1)
+		}
+	  rescue => e
+			puts e
+	end
 	@aes = OpenSSL::Cipher.new("AES-256-CFB")
 	@key = 'abcdefghijklmnopqrstuvwxyz123456'
 	def encrypt(command)
@@ -54,6 +71,5 @@ module MainCommands
 	end
 	LIST = ['background','list_sessions','use_session','help','exit'].sort
   comp = proc { |s| LIST.grep(/^#{Regexp.escape(s)}/) }
-	#Readline.completion_append_character = " "
 	Readline.completion_proc = comp
 end
