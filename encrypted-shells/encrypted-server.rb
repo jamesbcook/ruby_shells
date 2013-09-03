@@ -32,7 +32,6 @@ def start_loop(client)
 			out_put += tmp
 			break if tmp.length < recv_length
 		end
-		#puts out_put.chomp
 		decrypted_command = decrypt(out_put.chomp)
 		puts decrypted_command
 	}
