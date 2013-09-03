@@ -36,7 +36,7 @@ def command_client(client)
 		command = [(print ("#{@client_hash[:"#{@session_id}"]}:shell> ")), $stdin.gets.rstrip][1]
 		case command
 		  when 'exit'
-				client.print("#{command}\0")
+				client.print("#{command}")
 				client.close()
 			when ''
 				command_client(client)
@@ -44,7 +44,7 @@ def command_client(client)
 				print_info("Backgrounding Session!\n")
 				background()
 			else
-				client.print("#{command}\0")
+				client.print("#{command}")
 		end
 		out_put = ''
 		recv_length = 1024
