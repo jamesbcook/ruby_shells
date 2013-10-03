@@ -22,8 +22,8 @@ def start_loop(client)
     start_loop(client) if command == ''
     client.print("#{command}\n")
     exit if command == 'exit'
-    a = client.gets
-    puts a.split('\n')
+    results = client.gets
+    puts results.split('\n')
   }
 end
 begin
