@@ -7,7 +7,7 @@ def encrypt(command)
   @aes.key = @key
   #aes.iv = iv
   encrypted_data = @aes.update(command) + @aes.final
-  encoded_command = Base64.encode64(encrypted_data)
+  encoded_command = Base64.strict_encode64(encrypted_data)
   return encoded_command
 end
 def decrypt(command)
@@ -15,7 +15,7 @@ def decrypt(command)
   @aes.key = @key
   #aes.iv = iv
   base64_data = command
-  decode_data = Base64.decode64(base64_data)
+  decode_data = Base64.strict_decode64(base64_data)
   decrypt_data = @aes.update(decode_data) + @aes.final
   return decrypt_data
 end
@@ -42,8 +42,8 @@ def start_loop(client)
     client.print("#{encrypted_command}\n")
     exit if command == 'exit'
     results = client.gets
-    decrypt_results = decrypt(results)
-    puts decrypt_results.split('\n')
+    decrypt_results = decrypt(results.chomp)
+    puts decrypt_results
   }
 end
 begin

